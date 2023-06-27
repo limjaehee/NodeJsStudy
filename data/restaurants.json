@@ -1,0 +1,9 @@
+[
+    {
+        "name": "Test",
+        "address": "Teststreet 5, Testcity",
+        "cuisine": "korean",
+        "website": "https://www.naver.com",
+        "description": "test text"
+    }
+]
