@@ -1,6 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const uuid = require('uuid')
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get("/recommend", (req, res) => {
 //다른 경로에 대해 동일한 경로를 사용할 수 있다.
 app.post("/recommend", (req, res) => {
     const restaurant = req.body;
+    restaurant.id = uuid.v4();
     const filePath = path.join(__dirname, "data", "restaurants.json");
 
     const fileData = fs.readFileSync(filePath);
@@ -62,5 +64,20 @@ app.get("/restaurants", (req, res) => {
         restaurants: storedRestaurants,
     });
 });
+
+app.get("/restaurants/:id", (req, res) => {
+    const restaurantId = req.params.id;
+
+    const filePath = path.join(__dirname, "data", "restaurants.json");
+
+    const fileData = fs.readFileSync(filePath);
+    const storedRestaurants = JSON.parse(fileData);
+
+    const restaurant = storedRestaurants.find((v) => v.id === restaurantId)
+
+    res.render("restaurant-detail", {
+        restaurant: restaurant,
+    });
+})
 
 app.listen(3000);
