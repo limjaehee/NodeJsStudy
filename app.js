@@ -1,7 +1,9 @@
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
-const uuid = require('uuid')
+
+//파일명이 아닌 경로를 추가해준다.
+const defaultRoutes = require("./routes/default");
+const restaurantRoutes = require("./routes/restaurants");
 
 const app = express();
 
@@ -19,82 +21,25 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/about", (req, res) => {
-    res.render("about");
-});
-
-app.get("/confirm", (req, res) => {
-    res.render("confirm");
-});
-
-app.get("/", (req, res) => {
-    //템플릿 렌더링 작업
-    //템플릿 엔진을 사용해서 파일을 생성하고 HTML로 변환하여 브라우저로 전송하는 역할을 한다.
-    //index.ejs로 등록하지 않는 이유는 ejs가 자동으로 붙여주기 때문이다.
-    res.render("index");
-});
-
-app.get("/recommend", (req, res) => {
-    res.render("recommend");
-});
-
-//다른 경로에 대해 동일한 경로를 사용할 수 있다.
-app.post("/recommend", (req, res) => {
-    const restaurant = req.body;
-    restaurant.id = uuid.v4();
-    const filePath = path.join(__dirname, "data", "restaurants.json");
-
-    const fileData = fs.readFileSync(filePath);
-    const storedRestaurants = JSON.parse(fileData);
-
-    storedRestaurants.push(restaurant);
-
-    fs.writeFileSync(filePath, JSON.stringify(storedRestaurants));
-
-    res.redirect("/confirm");
-});
-
-app.get("/restaurants", (req, res) => {
-    const filePath = path.join(__dirname, "data", "restaurants.json");
-
-    const fileData = fs.readFileSync(filePath);
-    const storedRestaurants = JSON.parse(fileData);
-
-    res.render("restaurants", {
-        restaurants: storedRestaurants,
-    });
-});
-
-app.get("/restaurants/:id", (req, res) => {
-    const restaurantId = req.params.id;
-
-    const filePath = path.join(__dirname, "data", "restaurants.json");
-
-    const fileData = fs.readFileSync(filePath);
-    const storedRestaurants = JSON.parse(fileData);
-
-    const restaurant = storedRestaurants.find((v) => v.id === restaurantId);
-
-    res.render("restaurant-detail", {
-        restaurant: restaurant,
-    });
-})
+//해당 라우트가 없는 경우에만 아래를 확인하게 됨
+app.use("/", defaultRoutes);
+app.use("/", restaurantRoutes);
 
 /**404
  * 404를 처리하는 미들웨어는 맨 마지막에 와야 한다.
  * 위에서부터 차례대로 읽기 때문
-*/
-app.use((req, res)=> {
-    res.render('404')
-})
+ */
+app.use((req, res) => {
+  res.status(404).render("404");
+});
 
 /**500
  * 4개의 매개변수를 꼭 추가해야 한다.
  * error 객체는 익스프레스에서 자동으로 생성되고 채워진다.
  * error는 발생한 오류 정보를 포함한다.
-*/
-app.use((error, req, res, next)=> {
-    res.render('500')
-})
+ */
+app.use((error, req, res, next) => {
+  res.status(500).render("500");
+});
 
 app.listen(3000);
