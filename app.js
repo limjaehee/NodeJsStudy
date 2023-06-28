@@ -73,11 +73,28 @@ app.get("/restaurants/:id", (req, res) => {
     const fileData = fs.readFileSync(filePath);
     const storedRestaurants = JSON.parse(fileData);
 
-    const restaurant = storedRestaurants.find((v) => v.id === restaurantId)
+    const restaurant = storedRestaurants.find((v) => v.id === restaurantId);
 
     res.render("restaurant-detail", {
         restaurant: restaurant,
     });
+})
+
+/**404
+ * 404를 처리하는 미들웨어는 맨 마지막에 와야 한다.
+ * 위에서부터 차례대로 읽기 때문
+*/
+app.use((req, res)=> {
+    res.render('404')
+})
+
+/**500
+ * 4개의 매개변수를 꼭 추가해야 한다.
+ * error 객체는 익스프레스에서 자동으로 생성되고 채워진다.
+ * error는 발생한 오류 정보를 포함한다.
+*/
+app.use((error, req, res, next)=> {
+    res.render('500')
 })
 
 app.listen(3000);
